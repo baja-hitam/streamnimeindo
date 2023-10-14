@@ -4,34 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Streaming Anime</title>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
+    <link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/vidstack@next/player/styles/default/theme.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/vidstack@next/player/styles/default/layouts/video.min.css"
+/>
 </head>
 <body style="max-width: 420px; border: 1px solid black; padding: 10px;">
-    <div id="player"></div>
-    <br>
+  <h3 id="tag" style="display: none;">
+      
+  </h3>
+    <iframe id="player" style="display: none;" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" width="100%" height="230px" scrolling="no" allowfullscreen></iframe>
     <input type="text" name="" id="queryInput" placeholder="Search..." value=""><button id="searchBtn">Search</button>
 
     <div id="resultContainer" style="display: none;"></div>
 
     <div id="animeInfoContainer" style="display: none;">
-        <h3 id="videoTitle"></h3>
-        <span id="status"></span>
-        <span id="subOrDub"></span>
-        <span id="type"></span>
-        <p id="videoDescription"></p>
+        <div id="animeInfo">
 
-        <h3>Select</h3><select id="selectElement"></select>
-        <button id="episodeButton">Watch</button>
+        </div>
+        <div id="sinopsis">
+          <h2>Sinopsis</h2>
+        </div>
 
-            <div id="qualityContainer" style="display: none;">
-                <h3>Resolution</h3>
-                <div id="serverSelect" style="display: inline-block;"></div>
-                <a href="" id="downloadButton" target="_blank">Download</a>
-            </div>
+        <div id="episode">
+          
+        </div>
     </div>
     <div id="mainLoading" style="display: none;">
         Loading...
     </div>
     <script src="script.js"></script>
+    <script
+  src="https://cdn.jsdelivr.net/npm/vidstack@next/cdn/with-layouts/vidstack.js"
+  type="module"
+></script>
 </body>
 </html>

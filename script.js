@@ -5,17 +5,28 @@ const animeInfoContainer = document.getElementById("animeInfoContainer");
 const watchContainer = document.getElementById("qualityContainer");
 const mainLoading = document.getElementById("mainLoading");
 const videoPlayer = document.getElementById("player");
+const episode = document.getElementById('episode')
+const animeInfo = document.getElementById("animeInfo");
+const sinopsis1 = document.getElementById("sinopsis");
 
 searchBtn.addEventListener("click", async function () {
     animeInfoContainer.style.display = 'none';
     resultContainer.style.display = 'block';
     mainLoading.style.display = 'flex';
     resultContainer.innerHTML="";
+    mainLoading.innerHTML = "Loading..."
+    episode.innerHTML="";
+    animeInfo.innerHTML="";
+    sinopsis1.innerHTML="";
 
     const query = queryInput.value;
-    const rest = await fetch(`https://api.consumet.org/anime/gogoanime/${query}?page=1`);
+    const rest = await fetch(`https://otakudesu-anime-api.vercel.app/api/v1/search/${query}`);
     const data = await rest.json();
-    displayResults(data.results);
+    if (data.search.length > 0) {
+        displayResults(data.search);
+      } else {
+        mainLoading.innerHTML = "Data Tidak Ditemukan";
+      }
 });
 
 function displayResults(results) {
@@ -24,94 +35,70 @@ function displayResults(results) {
 
     results.forEach(result => {
         const resultDiv = document.createElement("div");
-        releaseDate = `${result.releaseDate.replace("Released: ","")}`;
-        if (!releaseDate.length) {
-            releaseDate = '???';
-        }
-        animeTitle = `${result.title.replace("(Dub)","")}`;
-        resultMain = `${result.subOrDub} | ${animeTitle} | ${releaseDate}`;
+        animeTitle = `${result.title.replace("(Judul)","")}`;
+        resultMain = `${animeTitle} | ${result.rating}`;
 
         resultDiv.innerHTML = resultMain;
+        var stringToDelete = "https:/otakudesu.wiki/anime/";
+        var hasil = hapusString(result.endpoint,stringToDelete);
         resultDiv.addEventListener("click", async function () {
             mainLoading.style.display = "flex";
             resultContainer.style.display = "none";
 
-            const res = await fetch(`https://api.consumet.org/anime/gogoanime/info/${result.id}`);
+            const res = await fetch(`https://otakudesu-anime-api.vercel.app/api/v1/detail/${hasil}`);
             const data = await res.json();
-            displayAnimeInfo(data);
+            displayAnimeInfo(data.anime_detail,data.episode_list);
         });
         resultContainer.appendChild(resultDiv);
     });
 };
 
-function displayAnimeInfo(data) {
+function displayAnimeInfo(data,data2) {
     animeInfoContainer.style.display = 'block';
     resultContainer.style.display = 'none';
-    watchContainer.style.display = 'none';
     mainLoading.style.display = 'none';
+    var title1;
 
-    const videoTitle = document.getElementById('videoTitle');
-    videoTitle.innerHTML = `${data.title}`;
-    const status = document.getElementById("status");
-    status.innerHTML = `${data.status}`;
-    const subOrDub = document.getElementById('subOrDub');
-    subOrDub.innerHTML = `${data.subOrDub}`;
-    const type = document.getElementById('type');
-    type.innerHTML = `${data.type}`;
-    const description = document.getElementById('videoDescription');
-    description.innerHTML = `${data.description}`;
-    const episodeSelect = document.getElementById('selectElement');
-    episodeSelect.innerHTML = "";
-
-    data.episodes.sort((a,b)=>b.number - a.number);
-    data.episodes.forEach((episode) => {
-        const option = document.createElement('option');
-        option.value = episode.id;
-        option.innerHTML = `Episode ${episode.number}`;
-        episodeSelect.appendChild(option);
-    });
-
-    const watchBtn = document.getElementById('episodeButton');
-    watchBtn.addEventListener("click", async function () {
-        const serverSelect = document.getElementById('serverSelect');
-        serverSelect.innerHTML="";
-        watchContainer.style.display = "none";
-        mainLoading.style.display = "flex";
-        
-        const episodeId = document.getElementById("selectElement").value;
-        const res = await fetch(`https://api.consumet.org/anime/gogoanime/watch/${episodeId}`);
-        const episodeData = await res.json();
-        displayWatchInfo(episodeData);
-    });
+    data.detail.forEach(data1 => {
+        const resultDetail = document.createElement("p");
+        resultDetail.innerHTML = data1;
+        animeInfo.appendChild(resultDetail);
+    })
+    data.sinopsis.forEach(sinopsis => {
+        const resultSinopsis = document.createElement("p");
+        resultSinopsis.innerHTML = sinopsis;
+        sinopsis1.appendChild(resultSinopsis);
+    })
+    data2.forEach(eps =>{
+        title1 = document.createElement('h4');
+        title1.innerHTML = eps.episode_title;
+        var stringToDelete = "https:/otakudesu.wiki/episode/";
+        var hasil1 = hapusString(eps.episode_endpoint,stringToDelete);
+        title1.addEventListener("click", async function (params) {
+            mainLoading.style.display = "flex";
+                const res = await fetch(`https://otakudesu-anime-api.vercel.app/api/v1/episode/${hasil1}`);
+                const episodeData = await res.json();
+                displayWatchInfo(episodeData);
+        });
+        episode.appendChild(title1);
+    })
 };
 
 function displayWatchInfo(episodeData) {
-    watchContainer.style.display = 'block';
     mainLoading.style.display = "none";
-
-    const downloadButton = document.getElementById('downloadButton');
-    downloadButton.href = episodeData.download;
-
-    const serverSelect = document.getElementById('serverSelect');
-    serverSelect.innerHTML = "";
-
-    episodeData.sources.forEach((stream) => {
-        const option = document.createElement('button');
-        option.value = stream.url;
-        option.className = "qualityBtn";
-        let streamquality = stream.quality.replace('default','auto');
-        option.innerHTML = `${streamquality}`;
-        serverSelect.appendChild(option);
-    });
-
-    const watchBtn = document.querySelectorAll(".qualityBtn");
-    for (let i = 0; i < watchBtn.length; i++) {
-        watchBtn[i].addEventListener("click",function () {
-            videoPlayer.style.display = 'block';
-            const serverUrl = this.value;
-            //videoPlayer.src = `https://9anime.skin/stream/play.php?slug=${serverUrl}`;
-            var player = document.getElementById('player');
-            player = new Clappr.Player({source: `${serverUrl}`, parentId: "#player"});
-        });
+    let tag = document.getElementById('tag');
+    tag.innerHTML = episodeData.title;
+    tag.style.display = "block"
+    const serverUrl = episodeData.streamLink;
+    var player = document.getElementById('player');
+    player.style.display = "block"
+    player.src = `${serverUrl}`;
     };
-};
+
+function hapusString(input, stringToBeDeleted) {
+    return input.replace(new RegExp(stringToBeDeleted, 'g'), '');
+  };
+
+  function cekString(input, stringToCheck) {
+    return input.includes(stringToCheck);
+  }
