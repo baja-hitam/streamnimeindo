@@ -7,7 +7,6 @@ const animeInfoContainer1 = document.getElementById("animeInfoContainer");
 
 searchBtn.addEventListener("click", async function () {
     resultContainer.style.display = 'block';
-    animeInfoContainer1.style.display = 'none';
     mainLoading.style.display = 'flex';
     resultContainer.innerHTML="";
     mainLoading.innerHTML = "Loading..."
